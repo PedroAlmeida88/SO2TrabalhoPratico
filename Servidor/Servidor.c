@@ -7,6 +7,7 @@
 
 #define TAM 200
 #define TAM_BUFFER 10
+#define NUM_THREADS 10
 
 //estrutura para o buffer circular
 typedef struct {
@@ -95,7 +96,7 @@ BOOL initMemAndSync(ControlData* dados) {
 
 }
 
-DWORD WINAPI ThreadConsumidor(LPVOID param) {
+DWORD WINAPI recieveCommands(LPVOID param) {
     ControlData* dados = (ControlData*)param;
     BufferCell cel;
     int contador = 0;
@@ -138,8 +139,8 @@ int _tmain(int argc, LPTSTR argv[]) {
     GameData gameData;
 
     HANDLE hFileMap; //handle para o file map
-    HANDLE hThread;
-    ControlData dados;
+    HANDLE hThread[NUM_THREADS], hSemaphoreUnique;
+    ControlData dados[NUM_THREADS];
     TCHAR comando[100];
 
 #ifdef UNICODE 
@@ -147,32 +148,46 @@ int _tmain(int argc, LPTSTR argv[]) {
     _setmode(_fileno(stdout), _O_WTEXT);
     _setmode(_fileno(stderr), _O_WTEXT);
 #endif
+    //Semaforo para cotrolar o numero de servidores ativos
+    hSemaphoreUnique = CreateSemaphore(
+        NULL,
+        1,
+        2,
+        TEXT("CONTROL")
+    );
+
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        _ftprintf(stderr, TEXT("[ERRO] Já existe um servidor aberto!\n"));
+        return -1;
+    }
+
     registryCheck(argv, &gameData);
     _tprintf_s(TEXT("\nVelocidade %d | Numero de faixas de rodagem %d\n"),gameData.starterVelocity, gameData.lanesNumber);
 
 
     initMemAndSync(&dados);
+
+
     //temos de usar o mutex para aumentar o nConsumidores para termos os ids corretos
-    WaitForSingleObject(dados.hMutex, INFINITE);
-    dados.memPar->nConsumidores++;
-    dados.id = dados.memPar->nConsumidores;
-    ReleaseMutex(dados.hMutex);
+    WaitForSingleObject(dados[0].hMutex, INFINITE);
+    dados[0].memPar->nConsumidores++;
+    dados[0].id = dados[0].memPar->nConsumidores;
+    ReleaseMutex(dados[0].hMutex);
 
 
     //lancamos a thread
-    hThread = CreateThread(NULL, 0, ThreadConsumidor, &dados, 0, NULL);
-    if (hThread != NULL) {
+    hThread[0] = CreateThread(NULL, 0, recieveCommands, &dados, 0, NULL);
+    if (hThread[0] != NULL) {
         _tprintf(TEXT("Escreva qualquer coisa para sair ...\n"));
         _getts_s(comando, 100);
-        dados.terminar = 1;
+        dados[0].terminar = 1;
 
         //esperar que a thread termine
-        WaitForSingleObject(hThread, INFINITE);
+        WaitForSingleObject(hThread[0], INFINITE);
     }
 
-    UnmapViewOfFile(dados.memPar);
+    UnmapViewOfFile(dados[0].memPar);
     //CloseHandles ... mas é feito automaticamente quando o processo termina
 
-    return 0;
     return 0;
 }
