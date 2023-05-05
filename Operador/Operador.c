@@ -3,7 +3,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <stdio.h>
-
+#include "utils.h"
 
 #define TAM_BUFFER 10
 #define TAM 100
@@ -108,10 +108,13 @@ DWORD WINAPI ThreadProdutor(LPVOID param) {
     int contador = 0;
 
     while (!dados->terminar) {
-        //cel.id = dados->id;
-        //cel.val = num_aleatorio(10, 99);
-        _tcscpy_s(cel.command, TAM, TEXT("COMMAND_TEST"));
-        //aqui entramos na logica da aula teorica
+        //ler uma frase
+        do {
+            _tprintf(TEXT("[ESCRITOR] Frase: "));
+            _fgetts(cel.command, TAM_BUFFER, stdin);
+            cel.command[_tcslen(cel.command) - 1] = '\0';
+        } while (verifyCommand(cel.command) != 1);
+        
 
         //esperamos por uma posicao para escrevermos
         WaitForSingleObject(dados->hSemEscrita, INFINITE);
@@ -134,10 +137,10 @@ DWORD WINAPI ThreadProdutor(LPVOID param) {
         ReleaseSemaphore(dados->hSemLeitura, 1, NULL);
 
         contador++;
-        _tprintf(TEXT("P%d produziu %s.\n"), dados->id, cel.command);
-        Sleep(num_aleatorio(2, 4) * 1000);
+        _tprintf(TEXT("P%d enviou o comando %s.\n"), dados->id, cel.command);
+        //Sleep(num_aleatorio(2, 4) * 1000);
     }
-    _tprintf(TEXT("P%d produziu %d items.\n"), dados->id, contador);
+    _tprintf(TEXT("P%d enviou %d comandos.\n"), dados->id, contador);
 
     return 0;
 }
@@ -167,10 +170,11 @@ int _tmain(int argc, LPTSTR argv[]) {
     //lancamos a thread
     hThread = CreateThread(NULL, 0, ThreadProdutor, &dados, 0, NULL);
     if (hThread != NULL) {
+        /*
         _tprintf(TEXT("Escreva qualquer coisa para sair ...\n"));
         _getts_s(comando, 100);
         dados.terminar = 1;
-
+        */
         //esperar que a thread termine
         WaitForSingleObject(hThread, INFINITE);
     }
