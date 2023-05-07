@@ -4,12 +4,13 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "Reg.h"
+#include "Game.h"
+//#include "Dll.h"
 
 #define TAM 200
 #define TAM_BUFFER 10
 #define NUM_THREADS 10
 
-//estrutura para o buffer circular
 typedef struct {
     //int id;
     //int val;
@@ -109,7 +110,7 @@ DWORD WINAPI recieveCommands(LPVOID param) {
         WaitForSingleObject(dados->hSemLeitura, INFINITE);
 
         //esperamos que o mutex esteja livre
-        WaitForSingleObject(dados->hMutex, INFINITE);
+        //WaitForSingleObject(dados->hMutex, INFINITE);
 
 
         //vamos copiar da proxima posicao de leitura do buffer circular para a nossa variavel cel
@@ -121,7 +122,7 @@ DWORD WINAPI recieveCommands(LPVOID param) {
             dados->memPar->posL = 0;
 
         //libertamos o mutex
-        ReleaseMutex(dados->hMutex);
+        //ReleaseMutex(dados->hMutex);
 
         //libertamos o semaforo. temos de libertar uma posicao de escrita
         ReleaseSemaphore(dados->hSemEscrita, 1, NULL);
@@ -135,6 +136,7 @@ DWORD WINAPI recieveCommands(LPVOID param) {
     return 0;
 }
 
+
 int _tmain(int argc, LPTSTR argv[]) {
     GameData gameData;
 
@@ -143,11 +145,16 @@ int _tmain(int argc, LPTSTR argv[]) {
     ControlData dados[NUM_THREADS];
     TCHAR comando[100];
 
+   // Game dadosLanes;
+    Game game[TOTAL_LANES];     //mapa do jogo
+    DadosLanesThread dadosLanes[TOTAL_LANES - 2];//Dados enviados para a thread
+
 #ifdef UNICODE 
     _setmode(_fileno(stdin), _O_WTEXT);
     _setmode(_fileno(stdout), _O_WTEXT);
     _setmode(_fileno(stderr), _O_WTEXT);
 #endif
+    initRand();
     //Semaforo para cotrolar o numero de servidores ativos
     hSemaphoreUnique = CreateSemaphore(
         NULL,
@@ -162,8 +169,7 @@ int _tmain(int argc, LPTSTR argv[]) {
     }
 
     registryCheck(argv, &gameData);
-    _tprintf_s(TEXT("\nVelocidade %d | Numero de faixas de rodagem %d\n"),gameData.starterVelocity, gameData.lanesNumber);
-
+    _tprintf_s(TEXT("\nVelocidade %d | Numero de faixas de rodagem %d\n"), gameData.starterVelocity, gameData.lanesNumber);
 
     initMemAndSync(&dados);
 
@@ -174,18 +180,35 @@ int _tmain(int argc, LPTSTR argv[]) {
     dados[0].id = dados[0].memPar->nConsumidores;
     ReleaseMutex(dados[0].hMutex);
 
-
     //lancamos a thread
     hThread[0] = CreateThread(NULL, 0, recieveCommands, &dados, 0, NULL);
-    if (hThread[0] != NULL) {
+    if (hThread[0] == NULL) {
+        /*
         _tprintf(TEXT("Escreva qualquer coisa para sair ...\n"));
         _getts_s(comando, 100);
         dados[0].terminar = 1;
 
         //esperar que a thread termine
         WaitForSingleObject(hThread[0], INFINITE);
+        */
     }
 
+    initGame(&game);
+    HANDLE mutex[TOTAL_LANES - 2];
+    //inicializar os dados das threads e criar uma thread para cada via
+    for (int i = 1; i < TOTAL_LANES - 1; i++){
+        dadosLanes[i].terminar = 0;
+        dadosLanes[i].game = &game;
+        mutex[i] = CreateMutex(NULL, FALSE, TEXT("SO2_MUTEX_LANES"));
+        dadosLanes[i].hMutex = mutex[i];
+        dadosLanes[i].laneNumber = i;
+        hThread[i] = CreateThread(NULL, 0, lanesFunction, &dadosLanes[i], 0, NULL);
+    }
+
+    WaitForSingleObject(hThread[0], INFINITE);
+    for (int i = 1; i < TOTAL_LANES - 1; i++) {
+        WaitForSingleObject(hThread[i], INFINITE);
+    }
     UnmapViewOfFile(dados[0].memPar);
     //CloseHandles ... mas é feito automaticamente quando o processo termina
 
