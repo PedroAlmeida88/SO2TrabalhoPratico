@@ -26,7 +26,7 @@ typedef struct {
 }DadosLanesThread;
 
 
-//Game game[TOTAL_LANES];
+Game* createGame(int lanesNumber, int velocidade);
 
 void initGame(Game *game);
 
@@ -36,6 +36,8 @@ DWORD WINAPI lanesFunction(LPVOID param);
 
 int randNum(int min, int max);
 
-void initRand();
+void initCars(Game* game, int laneNumber);
+
+void moveCars(TCHAR *direction, Game* game, int laneNumber, int* nCarros);
 
 #endif

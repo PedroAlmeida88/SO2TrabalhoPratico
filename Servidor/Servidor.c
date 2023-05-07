@@ -154,7 +154,7 @@ int _tmain(int argc, LPTSTR argv[]) {
     _setmode(_fileno(stdout), _O_WTEXT);
     _setmode(_fileno(stderr), _O_WTEXT);
 #endif
-    initRand();
+
     //Semaforo para cotrolar o numero de servidores ativos
     hSemaphoreUnique = CreateSemaphore(
         NULL,
