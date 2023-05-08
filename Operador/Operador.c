@@ -3,16 +3,15 @@
 #include <io.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include "utils.h"
+#include "Utils.h"
+//#include "Dll.h"
 
-#define TAM_BUFFER 10
+#define TAM_BUFFER 20
 #define TAM 100
-
-//estrutura para o buffer circular
 typedef struct {
     //int id;
     //int val;
-    TCHAR command[TAM];
+    TCHAR command[100];
 }BufferCell;
 
 //representa a nossa memoria partilhada
@@ -36,9 +35,6 @@ typedef struct {
     int id;
 }ControlData;
 
-int num_aleatorio(int min, int max) {
-    return rand() % (max - min + 1) + min;
-}
 
 BOOL initMemAndSync(ControlData* dados) {
     BOOL  primeiroProcesso = FALSE;
@@ -110,11 +106,15 @@ DWORD WINAPI ThreadProdutor(LPVOID param) {
     while (!dados->terminar) {
         //ler uma frase
         do {
-            _tprintf(TEXT("[ESCRITOR] Frase: "));
+            _tprintf(TEXT("[ESCRITOR] Commando: "));
             _fgetts(cel.command, TAM_BUFFER, stdin);
             cel.command[_tcslen(cel.command) - 1] = '\0';
-        } while (verifyCommand(cel.command) != 1);
-        
+            _tprintf(TEXT("escreveu %s\n"), cel.command);
+            if (verifyCommand(cel.command) == 1)
+                break;
+        } while (1);
+
+        _tprintf(TEXT("escreveu %s\n"), cel.command);
 
         //esperamos por uma posicao para escrevermos
         WaitForSingleObject(dados->hSemEscrita, INFINITE);
