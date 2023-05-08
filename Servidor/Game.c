@@ -14,14 +14,14 @@ void initGame(Game *game) {
         game[0].estrada[i] = '_';
         game[TOTAL_LANES - 1].estrada[i] = '-';
     }
-    game[0].velocity = 0;
-    game[TOTAL_LANES - 1].velocity = 0;
+    //game[0].velocity = 0;
+    //game[TOTAL_LANES - 1].velocity = 0;
 
     for (int i = 1; i < TOTAL_LANES - 1; i++) { //Inicializar as vias restantes
         for (int j = 0; j < TAM_LANE - 1; j++) {
             game[i].estrada[j] = ' ';
         }
-        game[i].velocity = 5;
+        //game[i].velocity = 5;
     }
 }
 
@@ -50,6 +50,8 @@ DWORD WINAPI lanesFunction(LPVOID param) {
     DadosLanesThread* dados = (DadosLanesThread*)param;
     //int seed = *(int*)param;
     int nCarros = 0;//num de carros na via
+    int starterVelocity = dados->velocity;
+    int velocity;
     srand((unsigned int)time(NULL) ^ GetCurrentThreadId());
     BOOL firstTime = TRUE;
     while (!dados->terminar) {
@@ -59,8 +61,10 @@ DWORD WINAPI lanesFunction(LPVOID param) {
         WaitForSingleObject(dados->hMutex, INFINITE);   
         if (firstTime) {
             initCars(dados->game, dados->laneNumber,&nCarros);
+            velocity = starterVelocity;
         }else {
-            moveCars(TEXT("right"), dados->game, dados->laneNumber, &nCarros);
+            moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
+            velocity = dados->velocity;
         }
 
         system("cls");
@@ -70,7 +74,7 @@ DWORD WINAPI lanesFunction(LPVOID param) {
        
         //libertamos o mutex
         ReleaseMutex(dados->hMutex);
-        Sleep(1000);
+        Sleep(1000 - (10 * velocity));
         firstTime = FALSE;
 
     }
@@ -130,9 +134,9 @@ void initCars(Game *game, int laneNumber,int* nCarros) {
     }
 }
 
-void moveCars(TCHAR *direction, Game* game, int laneNumber, int* nCarros) {
+void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
    
-    if (_tcscmp(direction, TEXT("left")) == 0) {
+    if (direction == 0) {
         //direction: right
         for (int i = 0; i < TAM_LANE; i++) {
             if (game[laneNumber].estrada[i] == 'C') {

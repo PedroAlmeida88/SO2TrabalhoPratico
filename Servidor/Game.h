@@ -11,16 +11,15 @@
 
 
 typedef struct {
-    int velocity;               //Velocidade da faixa de rodagem
+    //int velocity;               //Velocidade da faixa de rodagem
     TCHAR estrada[TAM_LANE];    //Numero de faixas de rodagem
 }Game;
 
 typedef struct {
-    //Game game[TOTAL_LANES];
-    //TCHAR estrada[TAM_LANE];
     int terminar;
     int laneNumber;
-    int velocity;
+    int *currDirection; //1->right 0->left
+    int *velocity;              
     HANDLE hMutex;
     Game *game;
 }DadosLanesThread;
