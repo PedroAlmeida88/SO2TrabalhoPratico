@@ -125,20 +125,93 @@ DWORD WINAPI recieveCommands(LPVOID param) {
         ReleaseSemaphore(dados->hSemEscrita, 1, NULL);
 
         contador++;
+        //soma += cel.val;
         _tprintf(TEXT("C%d recebeu o comando %s.\n"), dados->id, cel.command);	
         //executeCommand(comando, &dados);
-        /*
-        if (dados->dadosLanes[5].currDirection == 0) {
-            dados->dadosLanes[5].currDirection == 1;
-        }else {
-            dados->dadosLanes[5].currDirection == 0;
+        ////////////////////////////////////////////////////
+        TCHAR* token1 = NULL;
+        TCHAR* token2 = NULL;
+        TCHAR* token3 = NULL;
+        TCHAR* nextToken = NULL;
+        TCHAR* space = NULL;
+        int numTokens = 0;
+
+        // Obter o primeiro token
+        token1 = _tcstok_s(comando, TEXT(" "), &nextToken);
+        if (token1 == NULL) {
+            // Se não houver um primeiro token, ocorreu um erro
+            _tprintf_s(TEXT("[ERRO] Não foi possível obter o primeiro token.\n"));
+            return;
         }
-        */
-        //dados->dadosLanes[6].velocity = 100;
-        //dados->dadosLanes[5].currDirection = 0;
+        numTokens++;
+
+        // Obter o segundo token
+        token2 = _tcstok_s(NULL, TEXT(" "), &nextToken);
+        if (token2 == NULL) {
+            // Se não houver um segundo token, ocorreu um erro
+            _tprintf_s(TEXT("[ERRO] Não foi possível obter o segundo token.\n"));
+            return;
+        }
+        numTokens++;
+
+        // Obter o terceiro token, se houver
+        token3 = _tcstok_s(NULL, TEXT(" "), &nextToken);
+        if (token3 != NULL) {
+            numTokens++;
+        }
+
+        // Imprimir os tokens obtidos
+        _tprintf_s(TEXT("Token 1: %s\n"), token1);
+        _tprintf_s(TEXT("Token 2: %s\n"), token2);
+        if (numTokens == 3) {
+            _tprintf_s(TEXT("Token 3: %s\n"), token3);
+        }
+
+        // Executar a ação correspondente ao comando
+        if (_tcscmp(token1, TEXT("stop")) == 0) {
+            if (numTokens != 2) {
+                _tprintf_s(TEXT("[ERRO] O comando 'stop' deve ter dois argumentos.\n"));
+                return;
+            }
+            int lane = atoi(token2);
+            if (lane > 0 && lane < TOTAL_LANES) {
+                dados->dadosLanes[lane].stop = TRUE;
+            }
         
+        }
+        else if (_tcscmp(token1, TEXT("put")) == 0) {
+            if (numTokens != 3) {
+                _tprintf_s(TEXT("[ERRO] O comando 'put' deve ter três argumentos.\n"));
+                return;
+            }
+            int x = _tstoi(token2);
+            int y = _tstoi(token3);
+            y--;
+            if (x > 0 && x < TOTAL_LANES - 1) {
+                if((y >= 0 && y < TAM_LANE - 1))
+                    _tprintf(TEXT("Indice na estrada %d .\n"), y);
+
+                    dados->dadosLanes[2].game[x].estrada[y] = 'O';
+            }
+
+        }
+        else if (_tcscmp(token1, TEXT("turn")) == 0) {
+            if (numTokens != 2) {
+                _tprintf_s(TEXT("[ERRO] O comando 'stop' deve ter dois argumentos.\n"));
+                return;
+            }
+            int lane = atoi(token2);
+            if (lane > 0 && lane < TOTAL_LANES) {
+                if (dados->dadosLanes[lane].currDirection == 0) {
+                    dados->dadosLanes[lane].currDirection = 1;
+                }
+                else {
+                    dados->dadosLanes[lane].currDirection = 0;
+                }
+            }
+        }        
     }
-    _tprintf(TEXT("C%d recebeu %d comandos.\n"), dados->id, contador);
+    _tprintf(TEXT("Recevi %d comandos.\n"), contador);
 
     return 0;
 }
@@ -213,6 +286,7 @@ int _tmain(int argc, LPTSTR argv[]) {
         mutex[i] = CreateMutex(NULL, FALSE, TEXT("SO2_MUTEX_LANES"));
         dadosLanes[i].hMutex = mutex[i];
         dadosLanes[i].laneNumber = i;
+        dadosLanes[i].stop = FALSE;
         hThread[i] = CreateThread(NULL, 0, lanesFunction, &dadosLanes[i], 0, NULL);
     }
 

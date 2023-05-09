@@ -29,7 +29,7 @@ void show(Game *game) {
 	for (int i = 0; i < TOTAL_LANES; i++)
 	{
 		for (int j = 0; j < TAM_LANE - 1; j++)
-		{
+		{   
             if (game[i].estrada[j] == ' ')
                 _tprintf(TEXT("   "));
             if (game[i].estrada[j] == '-')
@@ -38,6 +38,8 @@ void show(Game *game) {
                 _tprintf(TEXT("___"));
             if (game[i].estrada[j] == 'C')
                 _tprintf(TEXT("8=D"));
+            if (game[i].estrada[j] == 'O')
+                _tprintf(TEXT(" O "));
 
 	        //_tprintf(TEXT("%c"),game[i].estrada[j]);
             
@@ -54,6 +56,7 @@ DWORD WINAPI lanesFunction(LPVOID param) {
     int velocity;
     srand((unsigned int)time(NULL) ^ GetCurrentThreadId());
     BOOL firstTime = TRUE;
+    int count = 0;
     while (!dados->terminar) {
         int rand = randNum(0, 19);
         //_tprintf(TEXT("Random number %d\n"), rand);
@@ -62,9 +65,20 @@ DWORD WINAPI lanesFunction(LPVOID param) {
         if (firstTime) {
             initCars(dados->game, dados->laneNumber,&nCarros);
             velocity = starterVelocity;
-        }else {
-            moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
-            velocity = dados->velocity;
+        }
+        else {
+            if (!dados->stop) {
+                moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
+                velocity = dados->velocity;
+                
+            }
+            else {
+                count++;
+                if (count >= 3) {
+                    dados->stop = FALSE;
+                    count = 0;
+                }
+            }
         }
 
         system("cls");
@@ -141,8 +155,13 @@ void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
         for (int i = 0; i < TAM_LANE; i++) {
             if (game[laneNumber].estrada[i] == 'C') {
                 if (i != 0) {
-                    game[laneNumber].estrada[i] = ' ';
-                    game[laneNumber].estrada[i - 1] = 'C';
+                    if (game[laneNumber].estrada[i - 1] != 'O') {
+                        game[laneNumber].estrada[i] = ' ';
+                        game[laneNumber].estrada[i - 1] = 'C';
+                    }
+                    else {
+                        game[laneNumber].estrada[i] = ' ';
+                    }
                 }
                 else {
                     game[laneNumber].estrada[i] = ' ';
@@ -153,7 +172,7 @@ void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
         //25% de chance de spwanar um carr
         if (*nCarros < 8) {
             int flag = randNum(0, 4);
-            if (flag == 0) {
+            if (flag == 0 && game[laneNumber].estrada[TAM_LANE - 1] != 'O') {
                 game[laneNumber].estrada[TAM_LANE - 1] = 'C';
             }
         }
@@ -163,8 +182,13 @@ void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
         for (int i = TAM_LANE - 1; i >= 0; i--) {
             if (game[laneNumber].estrada[i] == 'C') {
                 if (i != TAM_LANE - 1) {
-                    game[laneNumber].estrada[i] = ' ';
-                    game[laneNumber].estrada[i + 1] = 'C';
+                    if (game[laneNumber].estrada[i + 1] != 'O') {
+                        game[laneNumber].estrada[i] = ' ';
+                        game[laneNumber].estrada[i + 1] = 'C';
+                    }
+                    else {
+                        game[laneNumber].estrada[i] = ' ';
+                    }
                 }
                 else {
                     game[laneNumber].estrada[i] = ' ';
@@ -174,7 +198,7 @@ void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
         // 25% de chance de spawnar um carro
         if (*nCarros < 8) {
             int flag = randNum(0, 4);
-            if (flag == 0) {
+            if (flag == 0 && game[laneNumber].estrada[0] != 'O') {
                 game[laneNumber].estrada[0] = 'C';
             }
         }

@@ -20,6 +20,7 @@ typedef struct {
     int laneNumber;
     int *currDirection; //1->right 0->left
     int *velocity;              
+    BOOL stop;
     HANDLE hMutex;
     Game *game;
 }DadosLanesThread;
