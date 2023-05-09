@@ -125,14 +125,17 @@ DWORD WINAPI recieveCommands(LPVOID param) {
         ReleaseSemaphore(dados->hSemEscrita, 1, NULL);
 
         contador++;
-        //soma += cel.val;
         _tprintf(TEXT("C%d recebeu o comando %s.\n"), dados->id, cel.command);	
         //executeCommand(comando, &dados);
-        //if (_tcscmp(dados->dadosLanes[3].currDirection, TEXT("right")) == 0) {
-        //    _tcscpy_s(dados->dadosLanes[3].currDirection, 64, TEXT("left"));
-        //}
-        dados->dadosLanes[6].velocity = 100;
-        dados->dadosLanes[5].currDirection = 0;
+        /*
+        if (dados->dadosLanes[5].currDirection == 0) {
+            dados->dadosLanes[5].currDirection == 1;
+        }else {
+            dados->dadosLanes[5].currDirection == 0;
+        }
+        */
+        //dados->dadosLanes[6].velocity = 100;
+        //dados->dadosLanes[5].currDirection = 0;
         
     }
     _tprintf(TEXT("C%d recebeu %d comandos.\n"), dados->id, contador);
@@ -286,8 +289,15 @@ void executeCommand(TCHAR* command, ControlData* dados) {
             _tprintf_s(TEXT("[ERRO] O comando 'stop' deve ter dois argumentos.\n"));
             return;
         }
-
-        dados[0].dadosLanes[6].velocity = 100;
+        /*
+        if (dados->dadosLanes[5].currDirection == 0) {
+            dados->dadosLanes[5].currDirection == 1;
+        }
+        else {
+            dados->dadosLanes[5].currDirection == 0;
+        }
+        */
+        dados->dadosLanes[5].currDirection == 0;
 
 
         // Executar a ação correspondente
