@@ -27,9 +27,17 @@ void registryCheck(LPTSTR argv[], GameData* gameData) {
         gameData->starterVelocity = _ttoi(argv[1]);
         gameData->lanesNumber = _ttoi(argv[2]);
         if (gameData->starterVelocity > 100) {
-            gameData->starterVelocity = 100;          
-        }else if (gameData->starterVelocity < 0) {
+            gameData->starterVelocity = 100;
+        }
+        else if (gameData->starterVelocity < 0) {
             gameData->starterVelocity = 0;
+        }
+
+        if (gameData->lanesNumber > 10) {
+            gameData->lanesNumber= 10;
+        }
+        else if (gameData->lanesNumber < 5) {
+            gameData->lanesNumber = 5;
         }
         //---------Armazenar info no registry----------
         if (key_res == REG_CREATED_NEW_KEY || key_res == REG_OPENED_EXISTING_KEY) {

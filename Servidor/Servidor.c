@@ -19,8 +19,6 @@ typedef struct {
 
 //representa a nossa memoria partilhada
 typedef struct {
-    int nProdutores;
-    int nConsumidores;
     int posE; //proxima posicao de escrita
     int posL; //proxima posicao de leitura
     BufferCell buffer[TAM_BUFFER]; //buffer circular em si (array de estruturas)
@@ -36,11 +34,11 @@ typedef struct {
     HANDLE hMapFile;
     int terminar; // 1 para sair, 0 em caso contrário
     int id;
-    DadosLanesThread *dadosLanes;
+    DadosLanesThread* dadosLanes;
 }ControlData;
 
 
-void executeCommand(TCHAR *command, ControlData* dados);
+void executeCommand(TCHAR* command, ControlData* dados);
 
 BOOL initMemAndSync(ControlData* dados) {
     BOOL  primeiroProcesso = FALSE;
@@ -92,8 +90,6 @@ BOOL initMemAndSync(ControlData* dados) {
     }
 
     if (primeiroProcesso == TRUE) {
-        dados->memPar->nConsumidores = 0;
-        dados->memPar->nProdutores = 0;
         dados->memPar->posE = 0;
         dados->memPar->posL = 0;
     }
@@ -126,7 +122,7 @@ DWORD WINAPI recieveCommands(LPVOID param) {
 
         contador++;
         //soma += cel.val;
-        _tprintf(TEXT("C%d recebeu o comando %s.\n"), dados->id, cel.command);	
+        _tprintf(TEXT("C%d recebeu o comando %s.\n"), dados->id, cel.command);
         //executeCommand(comando, &dados);
         ////////////////////////////////////////////////////
         TCHAR* token1 = NULL;
@@ -177,7 +173,7 @@ DWORD WINAPI recieveCommands(LPVOID param) {
             if (lane > 0 && lane < TOTAL_LANES) {
                 dados->dadosLanes[lane].stop = TRUE;
             }
-        
+
         }
         else if (_tcscmp(token1, TEXT("put")) == 0) {
             if (numTokens != 3) {
@@ -188,10 +184,10 @@ DWORD WINAPI recieveCommands(LPVOID param) {
             int y = _tstoi(token3);
             y--;
             if (x > 0 && x < TOTAL_LANES - 1) {
-                if((y >= 0 && y < TAM_LANE - 1))
+                if ((y >= 0 && y < TAM_LANE - 1))
                     _tprintf(TEXT("Indice na estrada %d .\n"), y);
 
-                    dados->dadosLanes[2].game[x].estrada[y] = 'O';
+                dados->dadosLanes[2].game[x].estrada[y] = 'O';
             }
 
         }
@@ -209,13 +205,12 @@ DWORD WINAPI recieveCommands(LPVOID param) {
                     dados->dadosLanes[lane].currDirection = 0;
                 }
             }
-        }        
+        }
     }
     _tprintf(TEXT("Recevi %d comandos.\n"), contador);
 
     return 0;
 }
-
 
 int _tmain(int argc, LPTSTR argv[]) {
     GameData gameData;
@@ -225,7 +220,7 @@ int _tmain(int argc, LPTSTR argv[]) {
     ControlData dados[NUM_THREADS];
     TCHAR comando[100];
 
-   // Game dadosLanes;
+    // Game dadosLanes;
     Game game[TOTAL_LANES];     //mapa do jogo
     DadosLanesThread dadosLanes[TOTAL_LANES - 2];//Dados enviados para a thread
 
@@ -256,8 +251,8 @@ int _tmain(int argc, LPTSTR argv[]) {
 
     //temos de usar o mutex para aumentar o nConsumidores para termos os ids corretos
     WaitForSingleObject(dados[0].hMutex, INFINITE);
-    dados[0].memPar->nConsumidores++;
-    dados[0].id = dados[0].memPar->nConsumidores;
+    /*dados[0].memPar->nConsumidores++;
+    dados[0].id = dados[0].memPar->nConsumidores;*/
     dados[0].dadosLanes = dadosLanes;
     ReleaseMutex(dados[0].hMutex);
 
@@ -273,12 +268,12 @@ int _tmain(int argc, LPTSTR argv[]) {
         WaitForSingleObject(hThread[0], INFINITE);
         */
     }
-    
-     
+
+
     initGame(&game);
     HANDLE mutex[TOTAL_LANES - 2];
     //inicializar os dados das threads e criar uma thread para cada via
-    for (int i = 1; i < TOTAL_LANES - 1; i++){
+    for (int i = 1; i < TOTAL_LANES - 1; i++) {
         dadosLanes[i].terminar = 0;
         dadosLanes[i].velocity = gameData.starterVelocity;
         dadosLanes[i].currDirection = 1;
@@ -290,18 +285,18 @@ int _tmain(int argc, LPTSTR argv[]) {
         hThread[i] = CreateThread(NULL, 0, lanesFunction, &dadosLanes[i], 0, NULL);
     }
 
-    
+
     for (int i = 1; i < TOTAL_LANES - 1; i++) {
         WaitForSingleObject(hThread[i], INFINITE);
     }
-    
+
     WaitForSingleObject(hThread[0], INFINITE);
     UnmapViewOfFile(dados[0].memPar);
     //CloseHandles ... mas é feito automaticamente quando o processo termina
 
     return 0;
 }
-
+/**/
 void executeCommand(TCHAR* command, ControlData* dados) {
     TCHAR* token1 = NULL;
     TCHAR* token2 = NULL;

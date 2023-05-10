@@ -9,7 +9,7 @@ Game* createGame(int lanesNumber, int velocidade) {
     return array;
 }
 
-void initGame(Game *game) {
+void initGame(Game* game) {
     for (int i = 0; i < TAM_LANE; i++) {     //Inicializar a primeira e a última via
         game[0].estrada[i] = '_';
         game[TOTAL_LANES - 1].estrada[i] = '-';
@@ -25,11 +25,11 @@ void initGame(Game *game) {
     }
 }
 
-void show(Game *game) {
-	for (int i = 0; i < TOTAL_LANES; i++)
-	{
-		for (int j = 0; j < TAM_LANE - 1; j++)
-		{   
+void show(Game* game) {
+    for (int i = 0; i < TOTAL_LANES; i++)
+    {
+        for (int j = 0; j < TAM_LANE - 1; j++)
+        {
             if (game[i].estrada[j] == ' ')
                 _tprintf(TEXT("   "));
             if (game[i].estrada[j] == '-')
@@ -41,11 +41,11 @@ void show(Game *game) {
             if (game[i].estrada[j] == 'O')
                 _tprintf(TEXT(" O "));
 
-	        //_tprintf(TEXT("%c"),game[i].estrada[j]);
-            
-		}            
+            //_tprintf(TEXT("%c"),game[i].estrada[j]);
+
+        }
         _tprintf(TEXT("\n"));
-	}
+    }
 }
 
 DWORD WINAPI lanesFunction(LPVOID param) {
@@ -57,35 +57,54 @@ DWORD WINAPI lanesFunction(LPVOID param) {
     srand((unsigned int)time(NULL) ^ GetCurrentThreadId());
     BOOL firstTime = TRUE;
     int count = 0;
+    
+   
+
     while (!dados->terminar) {
         int rand = randNum(0, 19);
         //_tprintf(TEXT("Random number %d\n"), rand);
         //esperamos que o mutex esteja livre
-        WaitForSingleObject(dados->hMutex, INFINITE);   
+        WaitForSingleObject(dados->hMutex, INFINITE);
         if (firstTime) {
-            initCars(dados->game, dados->laneNumber,&nCarros);
+            initCars(dados->game, dados->laneNumber, &nCarros);
             velocity = starterVelocity;
         }
         else {
             if (!dados->stop) {
                 moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
                 velocity = dados->velocity;
-                
-            }
+             }
             else {
+                /*
+                LARGE_INTEGER dueTime;
+                // Define o tempo de espera para 5 segundos (5000 milissegundos)
+                dueTime.QuadPart = -50000000LL;
+                // Cria um timer que irá disparar depois de 5 segundos
+                HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+                SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
+
+                // Espera pelo timer
+                WaitForSingleObject(timer, INFINITE);
+                dados->stop = FALSE;
+                // Libera o timer
+                CloseHandle(timer); 
+                */
+               
                 count++;
                 if (count >= 3) {
                     dados->stop = FALSE;
                     count = 0;
                 }
+                
+               
             }
         }
 
         system("cls");
         show(dados->game);
-        
-        _tprintf(TEXT("Thread/lane num %d\n\n\n"),dados->laneNumber);
-       
+
+        _tprintf(TEXT("Thread/lane num %d\n\n\n"), dados->laneNumber);
+
         //libertamos o mutex
         ReleaseMutex(dados->hMutex);
         Sleep(1000 - (10 * velocity));
@@ -136,7 +155,7 @@ int randNum(int min, int max) {
     return rand() % (max - min + 1) + min;
 }
 
-void initCars(Game *game, int laneNumber,int* nCarros) {
+void initCars(Game* game, int laneNumber, int* nCarros) {
     for (int i = 0; i < TAM_LANE; i++) {
         int flag = randNum(0, 4);//25% de chance de meter um carro numa pos
         if (flag == 0) {
@@ -149,7 +168,7 @@ void initCars(Game *game, int laneNumber,int* nCarros) {
 }
 
 void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
-   
+
     if (direction == 0) {
         //direction: right
         for (int i = 0; i < TAM_LANE; i++) {
@@ -177,7 +196,8 @@ void moveCars(int direction, Game* game, int laneNumber, int* nCarros) {
             }
         }
 
-    }else {
+    }
+    else {
         //direction: left
         for (int i = TAM_LANE - 1; i >= 0; i--) {
             if (game[laneNumber].estrada[i] == 'C') {

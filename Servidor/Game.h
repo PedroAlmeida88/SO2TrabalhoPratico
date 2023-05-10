@@ -18,19 +18,19 @@ typedef struct {
 typedef struct {
     int terminar;
     int laneNumber;
-    int *currDirection; //1->right 0->left
-    int *velocity;              
+    int* currDirection; //1->right 0->left
+    int* velocity;
     BOOL stop;
     HANDLE hMutex;
-    Game *game;
+    Game* game;
 }DadosLanesThread;
 
 
 Game* createGame(int lanesNumber, int velocidade);
 
-void initGame(Game *game);
+void initGame(Game* game);
 
-void show(Game *game);
+void show(Game* game);
 
 DWORD WINAPI lanesFunction(LPVOID param);
 
@@ -38,6 +38,6 @@ int randNum(int min, int max);
 
 void initCars(Game* game, int laneNumber);
 
-void moveCars(TCHAR *direction, Game* game, int laneNumber, int* nCarros);
+void moveCars(TCHAR* direction, Game* game, int laneNumber, int* nCarros);
 
 #endif
