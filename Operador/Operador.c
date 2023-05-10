@@ -16,8 +16,6 @@ typedef struct {
 
 //representa a nossa memoria partilhada
 typedef struct {
-    int nProdutores;
-    int nConsumidores;
     int posE; //proxima posicao de escrita
     int posL; //proxima posicao de leitura
     BufferCell buffer[TAM_BUFFER]; //buffer circular em si (array de estruturas)
@@ -86,8 +84,6 @@ BOOL initMemAndSync(ControlData* dados) {
     }
 
     if (primeiroProcesso == TRUE) {
-        dados->memPar->nConsumidores = 0;
-        dados->memPar->nProdutores = 0;
         dados->memPar->posE = 0;
         dados->memPar->posL = 0;
     }
@@ -98,7 +94,7 @@ BOOL initMemAndSync(ControlData* dados) {
     return TRUE;
 }
 
-DWORD WINAPI ThreadProdutor(LPVOID param) {
+DWORD WINAPI sendCommands(LPVOID param) {
     ControlData* dados = (ControlData*)param;
     BufferCell cel;
     int contador = 0;
@@ -106,7 +102,7 @@ DWORD WINAPI ThreadProdutor(LPVOID param) {
     while (!dados->terminar) {
         //ler uma frase
         do {
-            _tprintf(TEXT("[ESCRITOR] Commando: "));
+            _tprintf(TEXT("[OPERADOR] Commando: "));
             _fgetts(cel.command, TAM_BUFFER, stdin);
             cel.command[_tcslen(cel.command) - 1] = '\0';
             _tprintf(TEXT("escreveu %s\n"), cel.command);
@@ -162,13 +158,13 @@ int _tmain(int argc, LPTSTR argv[]) {
 
     //temos de usar o mutex para aumentar o nProdutores para termos os ids corretos
     WaitForSingleObject(dados.hMutex, INFINITE);
-    dados.memPar->nProdutores++;
-    dados.id = dados.memPar->nProdutores;
+    //dados.memPar->nProdutores++;
+    //dados.id = dados.memPar->nProdutores;
     ReleaseMutex(dados.hMutex);
 
 
     //lancamos a thread
-    hThread = CreateThread(NULL, 0, ThreadProdutor, &dados, 0, NULL);
+    hThread = CreateThread(NULL, 0, sendCommands, &dados, 0, NULL);
     if (hThread != NULL) {
         /*
         _tprintf(TEXT("Escreva qualquer coisa para sair ...\n"));

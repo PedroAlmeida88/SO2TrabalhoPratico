@@ -37,12 +37,12 @@ int verifyCommand(TCHAR* command) {
 	//put 
 	if (_tcscmp(commandArray[0], TEXT("put")) == 0) {
 		if (nrArguments != 3) {
-			_tprintf(TEXT("[ERRO] Argumentos inválidos! Comando: put <x> <y>\n"));
+			_tprintf(TEXT("[ERRO] Argumentos inválidos! Comando: put <laneNumber> <posInLane>\n"));
 			return 0;
 		}
 		//garante que é um numero
 		if (!isStringANumber(commandArray[1]) || !isStringANumber(commandArray[2])) {
-			_tprintf(TEXT("[ERRO] Argumentos inválidos! Comando: put <x> <y>\n"));
+			_tprintf(TEXT("[ERRO] Argumentos inválidos! Comando: put <laneNumber> <posInLane>\n"));
 			return 0;
 		}
 		_tprintf(TEXT("Commando conhecido!\n"));
