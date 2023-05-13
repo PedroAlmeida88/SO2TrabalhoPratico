@@ -1,6 +1,6 @@
 #include "Game.h"
 
-Game* createGame(int lanesNumber, int velocidade) {
+Game* createGame(int lanesNumber) {
     Game* array = (Game*)malloc(lanesNumber * sizeof(Game));
     if (array == NULL) {
         printf("Erro ao alocar memoria");
@@ -12,39 +12,64 @@ Game* createGame(int lanesNumber, int velocidade) {
 void initGame(Game* game) {
     for (int i = 0; i < TAM_LANE; i++) {     //Inicializar a primeira e a última via
         game[0].estrada[i] = '_';
-        game[TOTAL_LANES - 1].estrada[i] = '-';
+        game[game->total_lanes - 1].estrada[i] = '-';
     }
     //game[0].velocity = 0;
     //game[TOTAL_LANES - 1].velocity = 0;
 
-    for (int i = 1; i < TOTAL_LANES - 1; i++) { //Inicializar as vias restantes
+    for (int i = 1; i < game->total_lanes - 1; i++) { //Inicializar as vias restantes
         for (int j = 0; j < TAM_LANE - 1; j++) {
             game[i].estrada[j] = ' ';
         }
         //game[i].velocity = 5;
     }
+    int posrand1;
+    int posrand2;
+    do {
+        posrand1 = randNum(1, TAM_LANE - 2);
+        posrand2 = randNum(1, TAM_LANE - 2);
+    } while (posrand1 == posrand2);
+    game[game->total_lanes - 1].estrada[posrand1] = 'S';
+    game[game->total_lanes - 1].estrada[posrand2] = 'S';
 }
 
 void show(Game* game) {
-    for (int i = 0; i < TOTAL_LANES; i++)
-    {
+    for (int i = 0; i < game->total_lanes; i++)
+    {   
+
+        for (int j = 0; j < TAM_LANE -1; j++)
+            _tprintf(TEXT("---"));
+        _tprintf(TEXT("\n"));
+
         for (int j = 0; j < TAM_LANE - 1; j++)
         {
             if (game[i].estrada[j] == ' ')
                 _tprintf(TEXT("   "));
             if (game[i].estrada[j] == '-')
-                _tprintf(TEXT("---"));
+                _tprintf(TEXT("   "));
             if (game[i].estrada[j] == '_')
-                _tprintf(TEXT("___"));
+                _tprintf(TEXT("   "));
             if (game[i].estrada[j] == 'C')
                 _tprintf(TEXT("8=D"));
             if (game[i].estrada[j] == 'O')
                 _tprintf(TEXT(" O "));
-
+            if (game[i].estrada[j] == 'S')
+                _tprintf(TEXT(" S "));
             //_tprintf(TEXT("%c"),game[i].estrada[j]);
-
         }
         _tprintf(TEXT("\n"));
+    }
+    for (int j = 0; j < TAM_LANE - 1; j++)
+        _tprintf(TEXT("---"));
+    _tprintf(TEXT("\n"));
+}
+
+void copyGame(Game* original, int size, Game* new) {
+    TCHAR road[TAM_LANE];
+    for (int i = 0; i < size; i++) {
+        new[i].total_lanes = original[i].total_lanes;
+        _tcscpy_s(new[i].estrada, TAM_LANE, original[i].estrada);
+        //_tcscpy_s(rad, TAM_LANE, original[i].estrada);
     }
 }
 
@@ -57,11 +82,8 @@ DWORD WINAPI lanesFunction(LPVOID param) {
     srand((unsigned int)time(NULL) ^ GetCurrentThreadId());
     BOOL firstTime = TRUE;
     int count = 0;
-    
-   
-
     while (!dados->terminar) {
-        int rand = randNum(0, 19);
+        //int rand = randNum(0, 19);
         //_tprintf(TEXT("Random number %d\n"), rand);
         //esperamos que o mutex esteja livre
         WaitForSingleObject(dados->hMutex, INFINITE);
@@ -73,30 +95,22 @@ DWORD WINAPI lanesFunction(LPVOID param) {
             if (!dados->stop) {
                 moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
                 velocity = dados->velocity;
-             }
+            }
             else {
                 /*
                 LARGE_INTEGER dueTime;
-                // Define o tempo de espera para 5 segundos (5000 milissegundos)
-                dueTime.QuadPart = -50000000LL;
-                // Cria um timer que irá disparar depois de 5 segundos
+                dueTime.QuadPart = -50000000LL; //5 segundos (5000 milissegundos)
                 HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
                 SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
-
-                // Espera pelo timer
                 WaitForSingleObject(timer, INFINITE);
                 dados->stop = FALSE;
-                // Libera o timer
-                CloseHandle(timer); 
+                CloseHandle(timer);
                 */
-               
                 count++;
-                if (count >= 3) {
+                if (count >= 4) {
                     dados->stop = FALSE;
                     count = 0;
                 }
-                
-               
             }
         }
 
@@ -105,50 +119,12 @@ DWORD WINAPI lanesFunction(LPVOID param) {
 
         _tprintf(TEXT("Thread/lane num %d\n\n\n"), dados->laneNumber);
 
-        //libertamos o mutex
         ReleaseMutex(dados->hMutex);
         Sleep(1000 - (10 * velocity));
         firstTime = FALSE;
 
     }
-    /*
-    ControlData* dados = (ControlData*)param;
-    BufferCell cel;
-    int contador = 0;
-    //int soma = 0;
-
-    while (!dados->terminar) {
-        //aqui entramos na logica da aula teorica
-
-        //esperamos por uma posicao para lermos
-        WaitForSingleObject(dados->hSemLeitura, INFINITE);
-
-        //esperamos que o mutex esteja livre
-        //WaitForSingleObject(dados->hMutex, INFINITE);
-
-
-        //vamos copiar da proxima posicao de leitura do buffer circular para a nossa variavel cel
-        CopyMemory(&cel, &dados->memPar->buffer[dados->memPar->posL], sizeof(BufferCell));
-        dados->memPar->posL++; //incrementamos a posicao de leitura para o proximo consumidor ler na posicao seguinte
-
-        //se apos o incremento a posicao de leitura chegar ao fim, tenho de voltar ao inicio
-        if (dados->memPar->posL == TAM_BUFFER)
-            dados->memPar->posL = 0;
-
-        //libertamos o mutex
-        //ReleaseMutex(dados->hMutex);
-
-        //libertamos o semaforo. temos de libertar uma posicao de escrita
-        ReleaseSemaphore(dados->hSemEscrita, 1, NULL);
-
-        contador++;
-        //soma += cel.val;
-        _tprintf(TEXT("C%d recebeu o comando %s.\n"), dados->id, cel.command);
-    }
-    _tprintf(TEXT("C%d recebeu %d comandos.\n"), dados->id, contador);
-
-    return 0;
-    */
+   
 }
 
 int randNum(int min, int max) {
@@ -157,7 +133,7 @@ int randNum(int min, int max) {
 
 void initCars(Game* game, int laneNumber, int* nCarros) {
     for (int i = 0; i < TAM_LANE; i++) {
-        int flag = randNum(0, 4);//25% de chance de meter um carro numa pos
+        int flag = randNum(0, 3);//33% de chance de meter um carro numa pos
         if (flag == 0) {
             game[laneNumber].estrada[i] = 'C';
             nCarros++;

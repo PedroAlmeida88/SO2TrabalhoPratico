@@ -39,28 +39,3 @@ BOOL isStringANumber(TCHAR* str) {
 
 	return TRUE;
 }
-/*
-
-void executeCommand(TCHAR* command, ControlData* dados) {
-	TCHAR** commandArray = NULL;
-	const TCHAR delim[2] = TEXT(" ");
-	unsigned int nrArguments = 0;
-	//int cordX, cordY;
-
-	commandArray = splitString(command, delim, &nrArguments);
-
-	if (_tcscmp(commandArray[0], TEXT("stop")) == 0) {
-		return;
-	}
-	if (_tcscmp(commandArray[0], TEXT("turn")) == 0) {
-
-		if (_tcscmp(dados->dadosLanes[atoi(commandArray[1])].currDirection, TEXT("right")) == 0) {
-			_tcscpy_s(dados->dadosLanes[atoi(commandArray[1])].currDirection, 64, TEXT("left"));
-		}
-		else {
-			_tcscpy_s(dados->dadosLanes[atoi(commandArray[1])].currDirection, 64, TEXT("right"));
-		}
-
-		return;
-	}
-}*/

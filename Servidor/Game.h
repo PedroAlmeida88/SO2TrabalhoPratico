@@ -6,13 +6,14 @@
 #include <io.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include "Dll.h"
 #define TAM_LANE 20
-#define TOTAL_LANES 10
+//#define TOTAL_LANES 10
 
-
+/*
 typedef struct {
-    //int velocity;               //Velocidade da faixa de rodagem
-    TCHAR estrada[TAM_LANE];    //Numero de faixas de rodagem
+    int total_lanes;            //num de estradas
+    TCHAR estrada[TAM_LANE];    
 }Game;
 
 typedef struct {
@@ -24,15 +25,16 @@ typedef struct {
     HANDLE hMutex;
     Game* game;
 }DadosLanesThread;
-
-
-Game* createGame(int lanesNumber, int velocidade);
+*/
+Game* createGame(int lanesNumber);
 
 void initGame(Game* game);
 
 void show(Game* game);
 
 DWORD WINAPI lanesFunction(LPVOID param);
+
+void copyGame(Game* original, int size, Game* new);
 
 int randNum(int min, int max);
 

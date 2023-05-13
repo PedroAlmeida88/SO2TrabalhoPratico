@@ -34,7 +34,7 @@ void registryCheck(LPTSTR argv[], GameData* gameData) {
         }
 
         if (gameData->lanesNumber > 10) {
-            gameData->lanesNumber= 10;
+            gameData->lanesNumber = 10;
         }
         else if (gameData->lanesNumber < 5) {
             gameData->lanesNumber = 5;
