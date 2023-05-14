@@ -26,7 +26,7 @@ DWORD WINAPI ThreadLer(LPVOID param) {
         
         //faço unlock do mutex
         ReleaseMutex(dados->hMutex);
-        //Sleep(1000);
+        Sleep(500);
     }
     return 0;
 }

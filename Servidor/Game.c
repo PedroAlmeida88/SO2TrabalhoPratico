@@ -92,20 +92,25 @@ DWORD WINAPI lanesFunction(LPVOID param) {
             velocity = starterVelocity;
         }
         else {
+            if (dados->suspende) {
+                LARGE_INTEGER dueTime;
+                // Define o tempo de espera para 5 segundos (5000 milissegundos)
+                dueTime.QuadPart = -100000000LL;
+                // Cria um timer que irá disparar depois de 5 segundos
+                HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+                SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
+
+                // Espera pelo timer
+                WaitForSingleObject(timer, INFINITE);
+                //dados->stop = FALSE;
+                // Libera o timer
+                CloseHandle(timer);
+            }
             if (!dados->stop) {
                 moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
                 velocity = dados->velocity;
             }
             else {
-                /*
-                LARGE_INTEGER dueTime;
-                dueTime.QuadPart = -50000000LL; //5 segundos (5000 milissegundos)
-                HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
-                SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
-                WaitForSingleObject(timer, INFINITE);
-                dados->stop = FALSE;
-                CloseHandle(timer);
-                */
                 count++;
                 if (count >= 4) {
                     dados->stop = FALSE;
@@ -114,10 +119,10 @@ DWORD WINAPI lanesFunction(LPVOID param) {
             }
         }
 
-        system("cls");
-        show(dados->game);
+        //system("cls");
+        //show(dados->game);
 
-        _tprintf(TEXT("Thread/lane num %d\n\n\n"), dados->laneNumber);
+        //_tprintf(TEXT("Thread/lane num %d\n\n\n"), dados->laneNumber);
 
         ReleaseMutex(dados->hMutex);
         Sleep(1000 - (10 * velocity));

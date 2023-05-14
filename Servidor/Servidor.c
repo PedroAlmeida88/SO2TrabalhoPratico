@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include "Reg.h"
 #include "Game.h"
-//#include "Dll.h"
+#include "Utils.h"
+#include "Dll.h"
 
 #define TAM 200
 #define MAX_LANES 10
@@ -39,7 +40,7 @@ int _tmain(int argc, LPTSTR argv[]) {
     GameData gameData;
 
     HANDLE hFileMap; //handle para o file map
-    HANDLE hThread[NUM_THREADS], hSemaphoreUnique,hTheadGameShare;
+    HANDLE hThread[NUM_THREADS], hSemaphoreUnique,hTheadGameShare,hThreadLer;
     ControlData dados[NUM_THREADS];
     TCHAR comando[100];
     ThreadDadosGame dadosGame;
@@ -100,8 +101,45 @@ int _tmain(int argc, LPTSTR argv[]) {
         mutex[i] = CreateMutex(NULL, FALSE, TEXT("SO2_MUTEX_LANES"));
         dadosLanes[i].hMutex = mutex[i];
         dadosLanes[i].laneNumber = i;
-        dadosLanes[i].stop = FALSE;        
+        dadosLanes[i].stop = FALSE;     
+        dadosLanes[i].suspende = FALSE;
         hThread[i] = CreateThread(NULL, 0, lanesFunction, &dadosLanes[i], 0, NULL);
+    }
+
+    while (1) {
+        _tprintf(TEXT("[SERVIDOR] Commando: "));
+        _fgetts(comando, TAM_BUFFER, stdin);
+        comando[_tcslen(comando)] = '\0';
+        _tprintf(TEXT("escreveu %s\n"), comando);
+        
+        int option = VerifyCommandConsole(comando);
+        if (option == 1) {
+            //suspender
+            _tprintf(comando);
+            for (int i = 1; i < game->total_lanes - 1; i++) {
+                dadosLanes[i].suspende = TRUE;
+            }
+        }
+        if (option == 2) {
+            //retomar
+            _tprintf(comando);
+            for (int i = 1; i < game->total_lanes - 1; i++) {
+                dadosLanes[i].suspende = FALSE;
+            }
+        }
+        if (option == 3) {
+            //reiniciar
+            _tprintf(comando);
+            initGame(&game);
+            //initCars(&game, gameData.lanesNumber, 0);
+        }
+        if (option == 4) {
+            //sair
+            _tprintf(comando);
+            for (int i = 1; i < game->total_lanes - 1; i++) {
+                dadosLanes[i].terminar = FALSE;
+            }
+        }
     }
 
     for (int i = 1; i < game->total_lanes - 1; i++) {

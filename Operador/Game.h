@@ -11,8 +11,8 @@
 #define TAM_LANE 20
 //#define TOTAL_LANES 10
 
-/*
-typedef struct {
+
+/*typedef struct {
     int total_lanes;              //Velocidade da faixa de rodagem
     TCHAR estrada[TAM_LANE];    //Numero de faixas de rodagem
 }Game;
@@ -25,8 +25,8 @@ typedef struct {
     BOOL stop;
     HANDLE hMutex;
     Game* game;
-}DadosLanesThread;
-*/
+}DadosLanesThread;*/
+
 
 Game* createGame(int lanesNumber);
 

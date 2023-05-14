@@ -23,9 +23,9 @@ void registryCheck(LPTSTR argv[], GameData* gameData) {
         return -1;
     }
 
-    if (argv[1] != NULL && argv[2] != NULL && argv[3] == NULL) {
-        gameData->starterVelocity = _ttoi(argv[1]);
-        gameData->lanesNumber = _ttoi(argv[2]);
+    if (argv[1] == NULL && argv[2] == NULL && argv[3] == NULL) {
+        gameData->starterVelocity = 5; //_ttoi(argv[1]);
+        gameData->lanesNumber = 5; //_ttoi(argv[2]);
         if (gameData->starterVelocity > 100) {
             gameData->starterVelocity = 100;
         }

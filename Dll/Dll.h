@@ -27,6 +27,7 @@ DLL_IMP_API typedef struct {
     int* currDirection; //1->right 0->left
     int* velocity;
     BOOL stop;
+    BOOL suspende;
     HANDLE hMutex;
     Game* game;
 }DadosLanesThread;

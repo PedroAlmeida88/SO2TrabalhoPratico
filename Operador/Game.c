@@ -83,15 +83,10 @@ DWORD WINAPI lanesFunction(LPVOID param) {
             velocity = starterVelocity;
         }
         else {
-            if (!dados->stop) {
-                moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
-                velocity = dados->velocity;
-            }
-            else {
-                /*
+            if (dados->suspende) {
                 LARGE_INTEGER dueTime;
                 // Define o tempo de espera para 5 segundos (5000 milissegundos)
-                dueTime.QuadPart = -50000000LL;
+                dueTime.QuadPart = -500000000LL;
                 // Cria um timer que irá disparar depois de 5 segundos
                 HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
                 SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
@@ -101,15 +96,17 @@ DWORD WINAPI lanesFunction(LPVOID param) {
                 dados->stop = FALSE;
                 // Libera o timer
                 CloseHandle(timer);
-                */
-
+            }
+            if (!dados->stop) {
+                moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
+                velocity = dados->velocity;
+            }
+            else {
                 count++;
-                if (count >= 3) {
+                if (count >= 4) {
                     dados->stop = FALSE;
                     count = 0;
                 }
-
-
             }
         }
 
