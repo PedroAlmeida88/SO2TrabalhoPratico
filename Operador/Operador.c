@@ -3,7 +3,6 @@
 #include <io.h>
 #include <fcntl.h>
 #include <stdio.h>
-//#include "Utils.h"
 #include "Game.h"
 #include "Dll.h"
 
@@ -13,20 +12,20 @@
 DWORD WINAPI ThreadLer(LPVOID param) {
     ThreadDadosGame* dados = (ThreadDadosGame*)param;
     while (1) {
-        //esperar até que evento desbloqueie
+        
         WaitForSingleObject(dados->hEvent, INFINITE);
-        //verifica se é preciso terminar a thread ou nao
+        
         if (dados->terminar)
             break;
-        //faço o lock para o mutex
+        
         WaitForSingleObject(dados->hMutex, INFINITE);
-        //_tprintf(TEXT("Mensagem recebida: %s\n"), dados->sharedStruct->msg);
+        
         system("cls");
         show(dados->sharedStruct->game);
         
-        //faço unlock do mutex
+        
         ReleaseMutex(dados->hMutex);
-        //Sleep(1000);
+        Sleep(250);
     }
     return 0;
 }
@@ -53,30 +52,20 @@ int _tmain(int argc, LPTSTR argv[]) {
     srand((unsigned int)time(NULL));
     initMemAndSync(&dados);
     initMemAndSyncGame(&dadosGame);
-
-
-    //temos de usar o mutex para aumentar o nProdutores para termos os ids corretos
+ 
     WaitForSingleObject(dados.hMutex, INFINITE);
-    //dados.memPar->nProdutores++;
-    //dados.id = dados.memPar->nProdutores;
+    
     ReleaseMutex(dados.hMutex);
 
-
-    //lancamos a thread
     hThread[0] = CreateThread(NULL, 0, sendCommands, &dados, 0, NULL);
     hThread[1] = CreateThread(NULL, 0, ThreadLer, &dadosGame, 0, NULL);
     if (hThread[0] != NULL && hThread[1] != NULL) {
-        /*
-        _tprintf(TEXT("Escreva qualquer coisa para sair ...\n"));
-        _getts_s(comando, 100);
-        dados.terminar = 1;
-        */
-        //esperar que a thread termine
+        
         WaitForMultipleObjects(2, hThread, TRUE, INFINITE);
     }
 
     UnmapViewOfFile(dados.memPar);
-    //CloseHandles ... mas é feito automaticamente quando o processo termina
+   
 
     return 0;
 }
