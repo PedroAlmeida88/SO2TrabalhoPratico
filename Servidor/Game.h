@@ -8,24 +8,7 @@
 #include <stdio.h>
 #include "Dll.h"
 #define TAM_LANE 20
-//#define TOTAL_LANES 10
 
-/*
-typedef struct {
-    int total_lanes;            //num de estradas
-    TCHAR estrada[TAM_LANE];    
-}Game;
-
-typedef struct {
-    int terminar;
-    int laneNumber;
-    int* currDirection; //1->right 0->left
-    int* velocity;
-    BOOL stop;
-    HANDLE hMutex;
-    Game* game;
-}DadosLanesThread;
-*/
 Game* createGame(int lanesNumber);
 
 void initGame(Game* game);

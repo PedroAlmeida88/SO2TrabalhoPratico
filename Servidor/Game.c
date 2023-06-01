@@ -10,18 +10,16 @@ Game* createGame(int lanesNumber) {
 }
 
 void initGame(Game* game) {
-    for (int i = 0; i < TAM_LANE; i++) {     //Inicializar a primeira e a última via
+    for (int i = 0; i < TAM_LANE; i++) {     
         game[0].estrada[i] = '_';
         game[game->total_lanes - 1].estrada[i] = '-';
     }
-    //game[0].velocity = 0;
-    //game[TOTAL_LANES - 1].velocity = 0;
 
-    for (int i = 1; i < game->total_lanes - 1; i++) { //Inicializar as vias restantes
+    for (int i = 1; i < game->total_lanes - 1; i++) { 
         for (int j = 0; j < TAM_LANE - 1; j++) {
             game[i].estrada[j] = ' ';
         }
-        //game[i].velocity = 5;
+        
     }
     int posrand1;
     int posrand2;
@@ -55,7 +53,7 @@ void show(Game* game) {
                 _tprintf(TEXT(" O "));
             if (game[i].estrada[j] == 'S')
                 _tprintf(TEXT(" S "));
-            //_tprintf(TEXT("%c"),game[i].estrada[j]);
+           
         }
         _tprintf(TEXT("\n"));
     }
@@ -69,56 +67,53 @@ void copyGame(Game* original, int size, Game* new) {
     for (int i = 0; i < size; i++) {
         new[i].total_lanes = original[i].total_lanes;
         _tcscpy_s(new[i].estrada, TAM_LANE, original[i].estrada);
-        //_tcscpy_s(rad, TAM_LANE, original[i].estrada);
+     
     }
 }
 
 DWORD WINAPI lanesFunction(LPVOID param) {
     DadosLanesThread* dados = (DadosLanesThread*)param;
-    //int seed = *(int*)param;
-    int nCarros = 0;//num de carros na via
+    int nCarros = 0;
     int starterVelocity = dados->velocity;
     int velocity;
     srand((unsigned int)time(NULL) ^ GetCurrentThreadId());
     BOOL firstTime = TRUE;
     int count = 0;
     while (!dados->terminar) {
-        //int rand = randNum(0, 19);
-        //_tprintf(TEXT("Random number %d\n"), rand);
-        //esperamos que o mutex esteja livre
         WaitForSingleObject(dados->hMutex, INFINITE);
         if (firstTime) {
             initCars(dados->game, dados->laneNumber, &nCarros);
             velocity = starterVelocity;
         }
         else {
+            if (dados->suspende) {
+                LARGE_INTEGER dueTime;
+                // Define o tempo de espera para 1 segundos
+                dueTime.QuadPart = -100000000LL;
+                
+                HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
+                SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
+
+                // Espera pelo timer
+                WaitForSingleObject(timer, INFINITE);
+             
+                CloseHandle(timer);
+            }
             if (!dados->stop) {
                 moveCars(dados->currDirection, dados->game, dados->laneNumber, &nCarros);
                 velocity = dados->velocity;
             }
             else {
-                /*
-                LARGE_INTEGER dueTime;
-                dueTime.QuadPart = -50000000LL; //5 segundos (5000 milissegundos)
-                HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
-                SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, 0);
-                WaitForSingleObject(timer, INFINITE);
-                dados->stop = FALSE;
-                CloseHandle(timer);
-                */
                 count++;
                 if (count >= 4) {
                     dados->stop = FALSE;
                     count = 0;
                 }
             }
-        }
-
-        system("cls");
-        show(dados->game);
-
-        _tprintf(TEXT("Thread/lane num %d\n\n\n"), dados->laneNumber);
-
+        }   
+        //system("cls");
+        //show(dados->game);
+        
         ReleaseMutex(dados->hMutex);
         Sleep(1000 - (10 * velocity));
         firstTime = FALSE;

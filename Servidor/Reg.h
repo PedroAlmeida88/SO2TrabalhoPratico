@@ -9,8 +9,8 @@
 #define TAM_REG 200
 
 typedef struct {
-    int starterVelocity;    //Velocidade inicial dos carros
-    int lanesNumber;        //Numero de faixas de rodagem
+    int starterVelocity;
+    int lanesNumber;   
 }GameData;
 
 void registryCheck(LPTSTR argv[], GameData* gameData);
