@@ -43,25 +43,20 @@ int _tmain(int argc, LPTSTR argv[]) {
 			_tprintf(TEXT("[LEITOR] %d %d... (ReadFile)\n"), ret, n);
 			break;
 		}
-		system("cls");
-;		show(&game);
-		//_tprintf(TEXT("[LEITOR] Recebi %d bytes: '%s'... (ReadFile)\n"), n, buf);
+		game[1].estrada[10] = 'O';
 
-		//transformar em maiusculas
-		for (int i = 0; i < _tcslen(buf); i++) {
-			buf[i] = _totupper(buf[i]);
-		}
-		_tcscpy_s(buf, 256, TEXT("TestePipeResposta[Sapo]"));
+		system("cls");
+		show(&game);
+		//_tprintf(TEXT("[LEITOR] Recebi %d bytes: '%s'... (ReadFile)\n"), n, buf);
 		//enviar msg ao escritor
-		ret = WriteFile(hPipe, buf, _tcslen(buf) * sizeof(TCHAR), &n, NULL);
+		ret = WriteFile(hPipe, game,sizeof(game), &n, NULL);
 		if (!ret || !n) {
 			_tprintf(TEXT("[LEITOR] %d %d... (ReadFile)\n"), ret, n);
 			break;
 		}
-		_tprintf(TEXT("[LEITOR] Enviei %d bytes: '%s'... (ReadFile)\n"), n, buf);
 
 	}
 	CloseHandle(hPipe);
 	Sleep(200);
-    return 0;
+	return 0;
 }

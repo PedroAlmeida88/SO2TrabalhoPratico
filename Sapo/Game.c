@@ -25,7 +25,7 @@ void show(Game* game) {
                 _tprintf(TEXT(" S "));
 
             
-           // _tprintf(TEXT("%c"), game[i].estrada[j]);
+           //_tprintf(TEXT("%c"), game[i].estrada[j]);
         }
         _tprintf(TEXT("\n"));
     }
