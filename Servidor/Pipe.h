@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
 	DadosPipe hPipes[MAX_CLI];
 	HANDLE hEvents[MAX_CLI];
-	HANDLE hMutex;
+	HANDLE hMutex,hMutexJogo;
 	Game* game;
 	int terminar;
 } ThreadDadosPipe;

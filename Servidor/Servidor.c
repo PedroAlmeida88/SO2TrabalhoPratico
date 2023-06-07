@@ -202,7 +202,7 @@ int _tmain(int argc, LPTSTR argv[]) {
         hPipe = CreateNamedPipe(PIPE_NAME,
             PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
             PIPE_WAIT | PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE,
-            MAX_CLI, 256 * sizeof(TCHAR), 256 * sizeof(TCHAR), 1000, NULL);
+            MAX_CLI, sizeof(game) * sizeof(TCHAR), sizeof(game) * sizeof(TCHAR), 1000, NULL);
 
         if (hPipe == INVALID_HANDLE_VALUE)
         {
@@ -223,9 +223,11 @@ int _tmain(int argc, LPTSTR argv[]) {
         }
     }
 
+    //dadosPipe.hMutexJogo;
     dadosPipe.game = &game;
     show(dadosPipe.game);
     hThreadPipe = CreateThread(NULL, 0, ThreadMensagens, &dadosPipe, 0, NULL);
+    show(dadosPipe.game);
 
     if (hThreadPipe == NULL)
     {

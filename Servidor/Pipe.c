@@ -7,14 +7,9 @@ DWORD WINAPI ThreadMensagens(LPVOID param)
 	int i;
 	BOOL ret;
 	ThreadDadosPipe* dados = (ThreadDadosPipe*)param;
-
+	Game game[10];
 	do
 	{
-		/*
-		_tprintf(TEXT("[ESCRITOR] Frase: "));
-		_fgetts(msg_env, 256, stdin);
-		msg_env[_tcslen(msg_env) - 1] = '\0';
-		*/
 		_tcscpy_s(msg_env, 256, TEXT("TestePipeEnvio"));
 		for (i = 0; i < MAX_CLI; i++)
 		{
@@ -22,26 +17,38 @@ DWORD WINAPI ThreadMensagens(LPVOID param)
 
 			if (dados->hPipes[i].activo)
 			{
-				////ATÉ AQUI O GAME ESTÁ CORRETO!! (Chega certo até aqui)
-				//if (!WriteFile(dados->hPipes[i].hInstancia, msg_env, _tcslen(msg_env) * sizeof(TCHAR), &n, NULL))
-				if (!WriteFile(dados->hPipes[i].hInstancia, dados->game, sizeof(dados->game) * 10 * sizeof(TCHAR), &n, NULL))
+				if (!WriteFile(dados->hPipes[i].hInstancia, dados->game, sizeof(dados->game) * 10 * 2 * sizeof(TCHAR), &n, NULL))
 					_tprintf(TEXT("[ERRO] Escrever no pipe! (WriteFile)\n"));
 				else
 				{
-					//_tprintf(TEXT("[ESCRITOR] Enviei %d bytes ao leitor [%d]... (WriteFile)\n"), n, i);
+					ret = ReadFile(dados->hPipes[i].hInstancia, &game, sizeof(game), &n, NULL);
+					
+					WaitForSingleObject(dados->hMutexJogo, INFINITE);
+					CopyMemory(dados->game, game, sizeof(game));//O jogo fica um pouco mais lento
+					/*
+					for (int i = 0; i < dados->game->total_lanes; i++)
+					{
+						for (int j = 0; j < TAM_LANE; j++)
+						{
+							dados->game[i].estrada[j] = game[i].estrada[j];
 
-					ret = ReadFile(dados->hPipes[i].hInstancia, msg_rec, sizeof(msg_rec) - sizeof(TCHAR), &n, NULL);
-					msg_rec[n / sizeof(TCHAR)] = '\0';
-					//_tprintf(TEXT("[ESCRITOR] Recebi %d bytes: '%s'... (ReadFile)\n"), n, msg_rec);
+						}
+					}
+					*/
+					system("cls");
+
+					show(dados->game);
+					ReleaseMutex(dados->hMutexJogo);
+					
 				}
 			}
 
 			ReleaseMutex(dados->hMutex);
 
 		}
-	//	Sleep(2000);
+		//	Sleep(2000);
 
-	} while (_tcscmp(msg_env, TEXT("fim")));
+	} while (!dados->terminar);
 
 	dados->terminar = 1;
 
